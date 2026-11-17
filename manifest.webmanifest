@@ -1,0 +1,11 @@
+{
+  "name": "MAX CARD FINANCE PRO",
+  "short_name": "MAX CARD",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "ar",
+  "dir": "rtl",
+  "background_color": "#090816",
+  "theme_color": "#32134c"
+}
