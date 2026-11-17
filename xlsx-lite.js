@@ -15,7 +15,7 @@
   }
   function numberAt(view,p){return view.getUint32(p,true)}
   function xml(text){const doc=new DOMParser().parseFromString(text,'application/xml');
-    if(doc.getElementsByTagName('parsererror').length)throw Error('ملف Excel غير سليم (XML)');return doc;}
+    if(doc.getElementsByTagNameNS('*','parsererror').length)throw Error('ملف Excel غير سليم (XML)');return doc;}
   async function xlsx(buffer){
     const b=new Uint8Array(buffer),v=new DataView(buffer);let end=-1;
     for(let i=b.length-22;i>=Math.max(0,b.length-65557);i--){if(numberAt(v,i)===0x06054b50){end=i;break;}}
@@ -44,21 +44,21 @@
       if(output.length>MAX_UNPACKED)throw Error('ملف Excel كبير جداً');return decoder.decode(output);
     }
     let shared=[];const sharedXml=await read('xl/sharedStrings.xml');
-    if(sharedXml){shared=Array.from(xml(sharedXml).getElementsByTagName('si'),si=>
-      Array.from(si.getElementsByTagName('t')).map(x=>x.textContent).join(''));}
+    if(sharedXml){shared=Array.from(xml(sharedXml).getElementsByTagNameNS('*','si'),si=>
+      Array.from(si.getElementsByTagNameNS('*','t')).map(x=>x.textContent).join(''));}
     const names=Array.from(directory.keys()).filter(n=>/^xl\/worksheets\/sheet\d+\.xml$/.test(n)).sort();
     const docText=await read(names[0]||'xl/worksheets/sheet1.xml');
     if(!docText)throw Error('ملف Excel لا يحتوي ورقة بيانات');
     const doc=xml(docText),result=[];
-    for(const row of Array.from(doc.getElementsByTagName('row'))){
-      const arr=[];for(const c of Array.from(row.getElementsByTagName('c'))){
+    for(const row of Array.from(doc.getElementsByTagNameNS('*','row'))){
+      const arr=[];for(const c of Array.from(row.getElementsByTagNameNS('*','c'))){
         const match=/^([A-Z]+)/i.exec(c.getAttribute('r')||'');if(!match)continue;
         let col=0;for(const letter of match[1].toUpperCase())col=col*26+letter.charCodeAt(0)-64;col--;
         if(col>=32)continue;
-        const type=c.getAttribute('t'),valNode=c.getElementsByTagName('v')[0];
+        const type=c.getAttribute('t'),valNode=c.getElementsByTagNameNS('*','v')[0];
         let value=valNode?valNode.textContent:'';
         if(type==='s')value=shared[Number(value)]??'';
-        else if(type==='inlineStr')value=Array.from(c.getElementsByTagName('t')).map(x=>x.textContent).join('');
+        else if(type==='inlineStr')value=Array.from(c.getElementsByTagNameNS('*','t')).map(x=>x.textContent).join('');
         else if(type==='b')value=value==='1'?'TRUE':'FALSE';
         arr[col]=value;
       }
