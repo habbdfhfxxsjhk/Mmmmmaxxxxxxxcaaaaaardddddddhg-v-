@@ -79,6 +79,7 @@ function plan(rows,db){
   let status='ready',reason='جاهز للإضافة',entry=null;
   if(!date||date<START||date>today()){status='error';reason='تاريخ غير صحيح أو خارج الفترة';}
   else if(!wallet){status='error';reason='المحفظة غير موجودة بالنظام';}
+  else if(norm(r.amount)===''){status='error';reason='مبلغ الرصيد أو العملية فارغ';}
   else if(!Number.isFinite(value)||value<0||value>1e9||(r.kind!=='balance'&&value===0)){status='error';reason='مبلغ غير صحيح';}
   else if(Math.abs(value*100-Math.round(value*100))>.00001){status='error';reason='المبلغ يقبل منزلتين عشريتين فقط';}
   else if(locked(db,date)){status='error';reason='التاريخ مغلق مالياً';}
@@ -207,4 +208,5 @@ $('excelClear').addEventListener('click',()=>{$('excelFile').value='';clearPrevi
 $('excelFile').addEventListener('change',clearPreview);
 $('excelKind').addEventListener('change',()=>{$('excelFile').value='';clearPreview();});
 renderWallets();
+if(typeof MutationObserver!=='undefined'&&$('kpis'))new MutationObserver(renderWallets).observe($('kpis'),{childList:true});
 })();
